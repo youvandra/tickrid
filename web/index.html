@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KNOB / k.no.b.1 / Low Profile Mechanical Keyboard</title>
+<style>
+  :root {
+    --cream: #f0ece0;
+    --black: #000;
+    --dark: #14100b;
+    --muted: #45423f;
+    --lime: #18d98d;
+    --sapphire: #2f6cff;
+    --orange: var(--sapphire);
+    --blue: var(--sapphire);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: #000;
+    color: var(--cream);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 40px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+  }
+  .logo img { height: 28px; display: block; }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a {
+    color: var(--cream); text-decoration: none; font-size: 12px; font-weight: 300;
+    opacity: 0.8; transition: opacity 0.2s;
+  }
+  .nav-links a:hover { opacity: 1; color: var(--lime); }
+  .nav-links a.active { opacity: 1; text-decoration: underline; }
+  .nav-links .new-badge { color: var(--lime); font-size: 10px; margin-left: 2px; }
+  .nav-email {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .nav-email input[type="email"] {
+    background: #ebebeb; border: none; border-radius: 48px; padding: 7px 14px;
+    font-size: 13px; outline: none; width: 200px; color: #000;
+  }
+  .nav-email button {
+    background: var(--muted); color: var(--cream); border: none; border-radius: 48px;
+    padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .nav-email button:hover { background: #5a5755; }
+
+  /* HERO */
+  .hero {
+    position: relative; width: 100%; height: 100vh; overflow: hidden;
+    display: flex; align-items: flex-end;
+  }
+  .hero video {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    width: 65%; margin-left: 17.7%; padding-bottom: 80px;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .hero-headline {
+    font-family: 'PP Editorial New', Georgia, 'Times New Roman', serif;
+    font-weight: 200; font-size: 52px; letter-spacing: -0.03em;
+    line-height: 1em; color: var(--cream); width: 378px;
+    margin-bottom: 16px;
+  }
+  .hero-sub {
+    font-size: 12px; color: var(--cream); max-width: 263px;
+    line-height: 1.5; margin-bottom: 12px; opacity: 0.9;
+  }
+  .hero-batch {
+    font-size: 12px; color: var(--cream); margin-bottom: 24px;
+  }
+  .hero-batch a { color: var(--lime); text-decoration: none; }
+  .hero-batch a:hover { text-decoration: underline; }
+  .btn-order {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--lime); color: var(--dark); border: none; border-radius: 103px;
+    padding: 10px 28px; font-size: 12px; font-weight: 400; cursor: pointer;
+    text-decoration: none; width: fit-content;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .btn-order:hover { transform: scale(1.03); background: #d9f520; }
+
+  /* DESCRIPTION */
+  .description {
+    background: #000; padding: 64px 0;
+    display: flex; justify-content: center;
+  }
+  .description-inner { width: 65%; }
+  .description-text {
+    font-family: 'PP Editorial New', Georgia, 'Times New Roman', serif;
+    font-weight: 200; font-size: 48px; color: var(--cream); line-height: 1.15;
+  }
+  .description-text a { text-decoration: none; }
+  .description-text a.orange { color: var(--orange); }
+  .description-text a.lime { color: var(--lime); }
+
+  /* SPECS ROW */
+  .specs-row {
+    background: #000; padding: 0 0 48px;
+    display: flex; justify-content: center;
+  }
+  .specs-inner {
+    width: 65%; display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  }
+  .spec-item {
+    padding: 18px 0; border-top: 1px solid rgba(240,236,224,0.2);
+  }
+  .spec-title { font-size: 22px; color: var(--cream); margin-bottom: 4px; }
+  .spec-desc { font-size: 14px; color: var(--cream); opacity: 0.8; }
+
+  /* MATERIALS */
+  .materials-section {
+    background: #000; padding: 0 0 64px;
+    display: flex; justify-content: center;
+  }
+  .materials-inner {
+    width: 65%; display: flex; gap: 27px; align-items: flex-start;
+  }
+  .mat-col { flex: 1; }
+  .mat-title { font-size: 22px; color: var(--cream); margin-bottom: 12px; }
+  .mat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid rgba(240,236,224,0.25); padding: 10px 0;
+    font-size: 14px; color: var(--cream);
+  }
+  .mat-row .mat-val { opacity: 0.7; text-align: right; }
+
+  /* PHOTO GRID */
+  .photo-grid-section {
+    background: #000; padding: 0 6px 6px;
+  }
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 200px);
+    gap: 6px;
+    width: 100%;
+  }
+  .grid-item { border-radius: 6px; overflow: hidden; position: relative; }
+  .grid-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .grid-item .caption {
+    position: absolute; bottom: 12px; left: 12px; right: 12px;
+    font-size: 14px; color: var(--cream); line-height: 1.4;
+  }
+
+  /* grid areas */
+  .grid-text-01 { grid-column: span 2; grid-row: span 2; background: #111; }
+  .grid-main { grid-column: span 3; grid-row: span 4; }
+  .grid-side { grid-column: span 2; grid-row: span 2; }
+  .grid-block-sm { grid-column: span 1; grid-row: span 1; background: #111; }
+  .grid-risers { grid-column: span 2; grid-row: span 2; }
+  .grid-screen { grid-column: span 3; grid-row: span 3; }
+  .grid-block-sq { grid-column: span 2; grid-row: span 2; background: #111; }
+  .grid-wide { grid-column: span 5; grid-row: span 3; }
+  .grid-footer { grid-column: span 5; grid-row: span 2; background: var(--orange); border-radius: 238px; position: relative; overflow: hidden; }
+
+  /* FOOTER CTA */
+  .footer-cta {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 40px 60px;
+  }
+  .footer-headline {
+    font-family: 'PP Editorial New', Georgia, 'Times New Roman', serif;
+    font-weight: 200; font-size: 96px; letter-spacing: -0.03em;
+    line-height: 0.9em; color: var(--dark); margin-bottom: 32px;
+  }
+  .footer-actions {
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  }
+  .footer-email-form {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .footer-email-form input[type="email"] {
+    background: #ebebeb; border: none; border-radius: 55px; padding: 9px 16px;
+    font-size: 14px; outline: none; width: 220px; color: #000;
+  }
+  .footer-email-form button {
+    background: #000; color: #fff; border: none; border-radius: 55px;
+    padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-order-footer {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--lime); color: var(--dark); border: none; border-radius: 103px;
+    padding: 10px 28px; font-size: 12px; font-weight: 400; cursor: pointer;
+    text-decoration: none; margin-top: 16px;
+    transition: transform 0.2s;
+  }
+  .btn-order-footer:hover { transform: scale(1.03); }
+  .copyright {
+    font-size: 14px; color: var(--dark); position: absolute; top: 20px; left: 60px;
+  }
+  .copyright a { color: var(--dark); }
+
+  /* PRESS */
+  .press-bar {
+    background: #000; padding: 32px 0; text-align: center;
+    font-size: 14px; color: var(--cream); opacity: 0.7;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 16px 20px; }
+    .nav-email { display: none; }
+    .hero-content { width: 90%; margin-left: 5%; padding-bottom: 60px; }
+    .hero-headline { font-size: 36px; width: 100%; }
+    .description-inner { width: 90%; }
+    .description-text { font-size: 28px; }
+    .specs-inner { width: 90%; grid-template-columns: 1fr; }
+    .materials-inner { width: 90%; flex-direction: column; }
+    .photo-grid {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto;
+    }
+    .grid-text-01, .grid-main, .grid-side, .grid-risers,
+    .grid-screen, .grid-block-sq, .grid-wide, .grid-footer {
+      grid-column: span 2; grid-row: span 1;
+    }
+    .footer-headline { font-size: 40px; }
+    .footer-cta { padding: 24px 24px; }
+    .grid-footer { border-radius: 24px; height: 340px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="#">
+    <img src="https://framerusercontent.com/images/RBulqoXyAo4D0eV4lrNX6BJZk.png" alt="KNOB">
+  </a>
+  <div class="nav-links">
+    <a href="#" class="active">keyboard</a>
+    <a href="#">numpad</a>
+    <a href="#">keysets <span class="new-badge">NEW</span></a>
+    <a href="#">lightswitch</a>
+  </div>
+  <div class="nav-email">
+    <input type="email" placeholder="your email address">
+    <button>Get Updates</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <video src="https://framerusercontent.com/assets/e9w3ukCJGVkH5sbHHPfrNckug.mp4"
+    autoplay muted loop playsinline
+    poster="https://framerusercontent.com/images/g125OKNKykpv6ZVrt8MngZdLYbc.jpg?width=1920">
+  </video>
+  <div class="hero-content">
+    <h1 class="hero-headline">The low-profile mechanical keyboard of your dreams.</h1>
+    <p class="hero-sub">The k.no.b.1 is a low-profile mechanical keyboard with uniquely designed keycaps, two programmable knobs, and a feature-filled full-color screen.</p>
+    <p class="hero-batch"><strong>Batch 2 Shipping Q2 2026</strong> // <a href="#">Updates</a></p>
+    <a class="btn-order" href="https://worklouder.cc/knob1/" target="_blank" rel="noopener">Order Today for $439 USD</a>
+  </div>
+</section>
+
+<!-- DESCRIPTION -->
+<section class="description">
+  <div class="description-inner">
+    <p class="description-text">
+      The Knob / k•no•b•1 is a low-profile mechanical keyboard designed by 3D Artist and Motion Designer <a class="orange" href="https://www.benfryc.com/" target="_blank">Ben Fryc</a>, and developed by <a class="lime" href="https://worklouder.cc/" target="_blank">Work Louder</a>. Evoking the look of both classic and modern technology, the k•no•b•1 is designed to be a beautiful and functional part of your every day workflow.
+    </p>
+  </div>
+</section>
+
+<!-- SPECS ROW -->
+<section class="specs-row">
+  <div class="specs-inner">
+    <div class="spec-item">
+      <div class="spec-title">Switches (hot swappable)</div>
+      <div class="spec-desc">tactile / 55g / two-stage spring / factory lubed</div>
+    </div>
+    <div class="spec-item">
+      <div class="spec-title">Screen Features</div>
+      <div class="spec-desc">Timer / Custom Wallpapers / More to come</div>
+    </div>
+  </div>
+</section>
+
+<!-- MATERIALS -->
+<section class="materials-section">
+  <div class="materials-inner">
+    <div class="mat-col">
+      <div class="mat-title">Materials</div>
+      <div class="mat-row"><span>Top Enclosure</span><span class="mat-val">CNC Alu / Anodized Silver</span></div>
+      <div class="mat-row"><span>Bottom Enclosure</span><span class="mat-val">CNC Alu / Anodized Gun Metal</span></div>
+      <div class="mat-row"><span>Switch Plate</span><span class="mat-val">Stamped Alu / Anodized Black</span></div>
+      <div class="mat-row"><span>Tilt Risers</span><span class="mat-val">Rubberized Plastic</span></div>
+      <div class="mat-row"><span>Keycaps</span><span class="mat-val">Dye Sub PBT</span></div>
+      <div class="mat-row"><span>Knobs</span><span class="mat-val">ABS Plastic</span></div>
+      <div class="mat-row"><span>Screen Glass</span><span class="mat-val">CNC Glass w/ adhesive black film</span></div>
+      <div class="mat-row"><span>Screen</span><span class="mat-val">100×310 px full-color LCD</span></div>
+    </div>
+    <div class="mat-col">
+      <div class="mat-title">Connectivity and Power</div>
+      <div class="mat-row"><span>USB-C Connection</span><span class="mat-val">Cable Included</span></div>
+      <div class="mat-row"><span>Bluetooth</span><span class="mat-val">Up to 3 saved connections</span></div>
+      <div class="mat-row"><span>Battery</span><span class="mat-val">3000mAh Li-ion Battery</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PHOTO GRID -->
+<section class="photo-grid-section">
+  <div class="photo-grid">
+
+    <!-- Text block 01 — spans 2×2 -->
+    <div class="grid-item grid-text-01">
+      <div class="caption">Built with an aluminum top and bottom shell for maximum durability.</div>
+    </div>
+
+    <!-- Main keyboard photo — spans 3×4 -->
+    <div class="grid-item grid-main">
+      <img src="https://framerusercontent.com/images/pR4gRaRnrteIseeI78DV1T2tbw.png" alt="Keyboard top view">
+    </div>
+
+    <!-- Side switch — 2×2 -->
+    <div class="grid-item grid-side">
+      <img src="https://framerusercontent.com/images/48F6W0ZDetCytB6ziiUBTfQTnE.png" alt="Side switch detail">
+    </div>
+
+    <!-- Blank block -->
+    <div class="grid-item grid-block-sm" style="background:#111;"></div>
+
+    <!-- Bottom risers — 2×2 -->
+    <div class="grid-item grid-risers">
+      <img src="https://framerusercontent.com/images/pAHs7TaJgD7grBFRm1uWDXq48.png" alt="Bottom risers">
+    </div>
+
+    <!-- Blank -->
+    <div class="grid-item grid-block-sm" style="background:#111;"></div>
+
+    <!-- Blank block -->
+    <div class="grid-item grid-block-sm" style="background:#111;">
+      <div class="caption" style="font-size:13px;">A full color screen with customizable software features.</div>
+    </div>
+
+    <!-- Screen tilted — 3×3 -->
+    <div class="grid-item grid-screen">
+      <img src="https://framerusercontent.com/images/Eeu3zkMLuTWjoGA3X5C2orozyGw.png" alt="Screen tilted">
+    </div>
+
+    <!-- Block with caption — 2×2 -->
+    <div class="grid-item grid-block-sq" style="background:#111;">
+      <div class="caption">Uniquely designed keycaps and two multi-function knobs.</div>
+    </div>
+
+    <!-- Wide bottom render — 5×3 -->
+    <div class="grid-item grid-wide" style="grid-column: span 5; height: 600px;">
+      <img src="https://framerusercontent.com/images/87bKIffMvLSFFtl9kh4wK7HUg.png" alt="Bottom render" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+
+    <!-- Footer CTA — orange pill -->
+    <div class="grid-item grid-footer" style="grid-column: span 5; height: 400px;">
+      <div class="footer-cta">
+        <div class="copyright">Copyright © 2025 / <a href="https://worklouder.cc/" target="_blank">Work Louder</a></div>
+        <div class="footer-headline">No, not that kind of<br>knob. Order now.</div>
+        <div class="footer-actions">
+          <div class="footer-email-form">
+            <input type="email" placeholder="your email address">
+            <button>Get Updates</button>
+          </div>
+        </div>
+        <a class="btn-order-footer" href="https://worklouder.cc/knob1/" target="_blank" rel="noopener">Order Today for $439 USD</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PRESS -->
+<div class="press-bar">
+  Press Inquiries  //  ben@knob.design
+</div>
+
+</body>
+</html>
