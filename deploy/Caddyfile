@@ -1,0 +1,10 @@
+# Ganti example.com dengan domain kamu (wajib) agar SSL otomatis jalan.
+example.com {
+  encode gzip
+
+  # WebSocket untuk device (wss://example.com/device)
+  reverse_proxy /device* backend:4000
+
+  # Next.js (termasuk /api/*)
+  reverse_proxy web:3000
+}

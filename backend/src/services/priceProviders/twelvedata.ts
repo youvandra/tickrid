@@ -1,0 +1,48 @@
+function normalizeSymbol(symbol: string): string {
+  if (symbol.includes("/")) {
+    const [base, quote] = symbol.split("/");
+    if (!base || !quote) throw new Error(`Invalid symbol: ${symbol}`);
+    return `${base.toUpperCase()}/${quote.toUpperCase()}`;
+  }
+  return symbol.toUpperCase();
+}
+
+export async function fetchTwelveSeries(
+  symbolInput: string,
+  apikey: string,
+  interval: string,
+  points: number,
+  opts?: { exchange?: string; timezone?: string },
+): Promise<{
+  closes: number[];
+  latest: number;
+}> {
+  const symbol = normalizeSymbol(symbolInput);
+  const url = new URL("https://api.twelvedata.com/time_series");
+  url.searchParams.set("symbol", symbol);
+  url.searchParams.set("interval", interval);
+  url.searchParams.set("format", "json");
+  url.searchParams.set("outputsize", String(points));
+  if (opts?.exchange && opts.exchange.trim().length > 0) {
+    url.searchParams.set("exchange", opts.exchange);
+  }
+  if (opts?.timezone) url.searchParams.set("timezone", opts.timezone);
+  url.searchParams.set("apikey", apikey);
+  const res = await fetch(url.toString(), { headers: { accept: "application/json" } });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error(`TwelveData fetch failed. URL: ${url.toString().replace(apikey, "REDACTED")}. Response: ${txt}`);
+    throw new Error(`TwelveData error ${res.status}`);
+  }
+  const data = (await res.json()) as { values?: Array<{ close: string }>; status?: string; message?: string; code?: number };
+  if (data.status === "error") {
+    if (data.code === 429) throw new Error("twelve_data_rate_limit");
+    console.error(`TwelveData API error. URL: ${url.toString().replace(apikey, "REDACTED")}. Error: ${data.message}`);
+    throw new Error(`TwelveData error: ${data.message || "Unknown error"}`);
+  }
+  const values = Array.isArray(data.values) ? data.values : [];
+  if (values.length === 0) throw new Error("No data values returned");
+  const latest = Number(values[0].close);
+  const closes = values.map((v) => Number(v.close)).filter((n) => Number.isFinite(n));
+  return { closes: closes.reverse(), latest };
+}

@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mantau
+      POSTGRES_PASSWORD: mantau
+      POSTGRES_DB: mantau
+    ports:
+      - "5432:5432"
+    volumes:
+      - mantau_postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - mantau_redis:/data
+
+volumes:
+  mantau_postgres:
+  mantau_redis:

@@ -1,0 +1,77 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tickr
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: tickr
+    volumes:
+      - tickr_postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - tickr_redis:/data
+
+  backend:
+    build:
+      context: ../backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HTTP_PORT: 4000
+      WEB_BASE_URL: ${WEB_BASE_URL}
+      POSTGRES_URL: postgres://tickr:${POSTGRES_PASSWORD}@postgres:5432/tickr
+      REDIS_URL: redis://redis:6379
+      SERVICE_ROLE: all
+      POLL_INTERVAL_MS: 3000
+      ADMIN_API_KEY: ${ADMIN_API_KEY}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      TWELVE_DATA_API_KEY: ${TWELVE_DATA_API_KEY}
+      TWELVE_CACHE_SECONDS: 120
+      LOG_SERIES_REQUESTS: 0
+      LOG_MARKET_POLLS: 0
+    depends_on:
+      - postgres
+      - redis
+    expose:
+      - "4000"
+
+  web:
+    build:
+      context: ../web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Biarkan kosong agar client pakai same-origin (/api/*)
+      NEXT_PUBLIC_API_BASE_URL: ""
+      # URL internal untuk route handlers Next.js memanggil backend
+      BACKEND_INTERNAL_URL: http://backend:4000
+      # Admin dashboard login
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
+      # Key server-only untuk memanggil endpoint admin backend
+      BACKEND_ADMIN_API_KEY: ${ADMIN_API_KEY}
+    depends_on:
+      - backend
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
+      - backend
+    ports:
+      - "80:80"
+      # Untuk SSL nanti, tambahkan:
+      # - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+
+volumes:
+  tickr_postgres:
+  tickr_redis:
