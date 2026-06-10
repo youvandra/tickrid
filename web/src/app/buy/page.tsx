@@ -111,17 +111,14 @@ export default function BuyPage() {
               ))}
             </ul>
 
-            <a
-              href="#"
-              className="knob-btn-order knob-btn-large w-full"
-              aria-label="Beli tickr.id Standard di Shopee"
+            <button
+              disabled
+              className="knob-btn-order knob-btn-large w-full opacity-40 cursor-not-allowed pointer-events-none"
+              aria-label="Sold out"
             >
               <ShoppingCart aria-hidden="true" />
-              Buy on Shopee
-            </a>
-            <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest">
-              Shopee link coming soon
-            </p>
+              Sold Out
+            </button>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 items-center px-2">
               <p className="text-[9px] md:text-[10px] text-white/30 font-bold uppercase tracking-widest">
                 7-day return (damage/mismatch)
