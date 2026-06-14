@@ -1,3 +1,5 @@
+let currentKeyIndex = 0;
+
 function normalizeSymbol(symbol: string): string {
   if (symbol.includes("/")) {
     const [base, quote] = symbol.split("/");
@@ -19,9 +21,11 @@ export async function fetchTwelveSeries(
 }> {
   if (apikeys.length === 0) throw new Error("missing_twelve_data_api_key");
   const symbol = normalizeSymbol(symbolInput);
+  const startIdx = currentKeyIndex % apikeys.length;
 
-  for (let i = 0; i < apikeys.length; i++) {
-    const apikey = apikeys[i];
+  for (let offset = 0; offset < apikeys.length; offset++) {
+    const idx = (startIdx + offset) % apikeys.length;
+    const apikey = apikeys[idx];
     const url = new URL("https://api.twelvedata.com/time_series");
     url.searchParams.set("symbol", symbol);
     url.searchParams.set("interval", interval);
@@ -36,16 +40,20 @@ export async function fetchTwelveSeries(
     const res = await fetch(url.toString(), { headers: { accept: "application/json" } });
     if (!res.ok) {
       const txt = await res.text();
-      console.error(`TwelveData fetch failed (key ${i + 1}/${apikeys.length}). URL: ${url.toString().replace(apikey, "REDACTED")}. Response: ${txt}`);
-      if (i < apikeys.length - 1) continue;
+      console.error(`TwelveData fetch failed (key ${idx + 1}/${apikeys.length}). URL: ${url.toString().replace(apikey, "REDACTED")}. Response: ${txt}`);
+      if (offset < apikeys.length - 1) {
+        currentKeyIndex = (idx + 1) % apikeys.length;
+        continue;
+      }
       throw new Error(`TwelveData error ${res.status}`);
     }
 
     const data = (await res.json()) as { values?: Array<{ close: string }>; status?: string; message?: string; code?: number };
     if (data.status === "error") {
       if (data.code === 429) {
-        if (i < apikeys.length - 1) {
-          console.warn(`TwelveData rate limit on key ${i + 1}, switching to key ${i + 2}`);
+        if (offset < apikeys.length - 1) {
+          console.warn(`TwelveData rate limit on key ${idx + 1}, advancing to key ${(idx + 1) % apikeys.length + 1}`);
+          currentKeyIndex = (idx + 1) % apikeys.length;
           continue;
         }
         throw new Error("twelve_data_rate_limit");
@@ -56,7 +64,7 @@ export async function fetchTwelveSeries(
 
     const values = Array.isArray(data.values) ? data.values : [];
     if (values.length === 0) {
-      if (i < apikeys.length - 1) continue;
+      if (offset < apikeys.length - 1) continue;
       throw new Error("No data values returned");
     }
     const latest = Number(values[0].close);
