@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <Preferences.h>
@@ -9,6 +10,7 @@
 #include <freertos/semphr.h>
 #include <freertos/task.h>
 
+static WiFiClientSecure wifiClient;
 static MatrixPanel_I2S_DMA *matrix = nullptr;
 
 static const int PANEL_RES_X = 64;
@@ -819,7 +821,7 @@ static bool fetchSeries() {
     url += "&exchange=";
     url += encodeQueryComponent(currentExchange);
   }
-  if (!http.begin(url)) return false;
+  if (!http.begin(wifiClient, url)) return false;
   http.setReuse(true);
   http.setTimeout(4000);
   int code = http.GET();
@@ -881,7 +883,7 @@ static bool fetchLatestForIndex(int idx) {
     url += "&exchange=";
     url += encodeQueryComponent(tickers[idx].exchange);
   }
-  if (!http.begin(url)) return false;
+  if (!http.begin(wifiClient, url)) return false;
   http.setReuse(true);
   http.setTimeout(4000);
   int code = http.GET();
@@ -915,7 +917,7 @@ static bool fetchConfig() {
   if (deviceId.length() == 0) return false;
   HTTPClient http;
   String url = String(API_BASE) + "/api/devices/" + deviceId;
-  if (!http.begin(url)) return false;
+  if (!http.begin(wifiClient, url)) return false;
   http.setReuse(true);
   http.setTimeout(4000);
   int code = http.GET();
@@ -1282,6 +1284,7 @@ void setup() {
 
   drawSplash();
 
+  wifiClient.setInsecure();
   Serial.begin(115200);
   prefs.begin("tickr", false);
   if (!dataMutex) dataMutex = xSemaphoreCreateMutex();
