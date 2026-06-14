@@ -3,6 +3,7 @@ import cors from "cors";
 import type pg from "pg";
 import { createRedis, CHANNEL_CONFIG_PUSH, HASH_PAIR_COUNTS, KEY_ONLINE_PREFIX, KEY_SERIES_PREFIX } from "./redis/index.js";
 import { fetchTwelveSeries } from "./services/priceProviders/twelvedata.js";
+import { fetchYahooSeries } from "./services/priceProviders/yahooFinance.js";
 import {
   getConfiguration,
   getDevice,
@@ -126,19 +127,34 @@ export async function createHttpApp(opts: {
     });
   });
 
+  function isCrypto(sym: string): boolean {
+    return sym.includes("/");
+  }
+
+  function toYahooInterval(twelveInt: string): string {
+    const m: Record<string, string> = {
+      "1min": "1m", "5min": "5m", "15min": "15m",
+      "30min": "30m", "45min": "30m",
+      "1h": "1h", "2h": "1h", "4h": "1h",
+      "1day": "1d",
+    };
+    return m[twelveInt] ?? "5m";
+  }
+
+  function yahooRange(points: number): string {
+    if (points <= 10) return "1d";
+    if (points <= 40) return "5d";
+    if (points <= 100) return "1mo";
+    return "3mo";
+  }
+
   app.get("/api/series", async (req, res) => {
     const symbol = String(req.query.symbol ?? req.query.pair ?? "");
     const interval = String(req.query.interval ?? "1min");
     const exchange = req.query.exchange ? String(req.query.exchange) : "";
     const points = Math.max(2, Math.min(128, Number(req.query.points ?? 32)));
+    const cacheKey = `${KEY_SERIES_PREFIX}${symbol}:${exchange}:${interval}:${points}`;
     
-    const apiKeys = [
-      process.env.TWELVE_DATA_API_KEY,
-      process.env.TWELVE_DATA_API_KEY_2,
-      process.env.TWELVE_DATA_API_KEY_3,
-      process.env.TWELVE_DATA_API_KEY_4,
-      process.env.TWELVE_DATA_API_KEY_5,
-    ].filter((k): k is string => !!k);
     const timezone = process.env.TWELVE_TIMEZONE || "Asia/Jakarta";
     if (!symbol) return res.status(400).json({ error: "missing_symbol" });
     if (symbol.length > 64) return res.status(400).json({ error: "symbol_too_long" });
@@ -148,7 +164,6 @@ export async function createHttpApp(opts: {
       console.log(`[API] Series request: symbol=${symbol}, interval=${interval}, exchange=${exchange}, points=${points}`);
     }
 
-    const cacheKey = `${KEY_SERIES_PREFIX}${symbol}:${exchange}:${interval}:${points}`;
     const cached = await redis.get(cacheKey);
     if (cached) {
       try {
@@ -158,12 +173,43 @@ export async function createHttpApp(opts: {
     }
 
     try {
-      if (apiKeys.length === 0) throw new Error("missing_twelve_data_api_key");
+      let closes: number[];
+      let latest: number;
 
-      const { closes, latest } = await fetchTwelveSeries(symbol, apiKeys, interval, points, {
-        exchange: exchange || undefined,
-        timezone,
-      });
+      if (isCrypto(symbol)) {
+        const apiKeys = [
+          process.env.TWELVE_DATA_API_KEY,
+          process.env.TWELVE_DATA_API_KEY_2,
+          process.env.TWELVE_DATA_API_KEY_3,
+          process.env.TWELVE_DATA_API_KEY_4,
+          process.env.TWELVE_DATA_API_KEY_5,
+        ].filter((k): k is string => !!k);
+        if (apiKeys.length === 0) throw new Error("missing_twelve_data_api_key");
+        const result = await fetchTwelveSeries(symbol, apiKeys, interval, points, {
+          exchange: exchange || undefined,
+          timezone,
+        });
+        closes = result.closes;
+        latest = result.latest;
+      } else {
+        const yahooInt = toYahooInterval(interval);
+        const range = yahooRange(points);
+        const candidates = exchange === "Yahoo Finance" || !exchange
+          ? [symbol, symbol.endsWith(".JK") ? symbol : `${symbol}.JK`]
+          : [symbol];
+        let result: { closes: number[]; latest: number } | null = null;
+        for (const c of candidates) {
+          try {
+            result = await fetchYahooSeries(c, { interval: yahooInt, range });
+            break;
+          } catch {
+            continue;
+          }
+        }
+        if (!result) throw new Error("yahoo_no_data");
+        closes = result.closes.slice(-points);
+        latest = result.latest;
+      }
 
       const oldest = closes[0];
       const newest = closes[closes.length - 1];
@@ -186,7 +232,7 @@ export async function createHttpApp(opts: {
         return res.status(429).json({ error: "twelve_data_rate_limit" });
       }
       console.error(`Error fetching series for ${symbol}:`, e);
-      return res.status(502).json({ error: "twelve_data_error" });
+      return res.status(502).json({ error: "series_fetch_error" });
     }
   });
 
