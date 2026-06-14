@@ -115,7 +115,7 @@ export async function createHttpApp(opts: {
       crypto: CRYPTO_PAIRS.map((pair) => ({ type: "crypto", pair })),
       stocks: STOCK_SYMBOLS.map((pair) => ({ type: "stock", pair })),
       // Keep these in-sync with the web UI type values.
-      types: ["crypto", "stock", "etf", "forex", "commodity"],
+      types: ["crypto", "stocks", "etf", "forex", "commodity"],
       intervals: {
         m: [1, 5, 15, 30, 45],
         h: [1, 2, 4],
