@@ -32,7 +32,7 @@ export async function fetchYahooSeries(
     headers: {
       accept: "application/json",
       // Yahoo blocks some default UAs; keep it browser-like.
-      "user-agent": "Mozilla/5.0 (compatible; tickr/1.0)",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     },
   });
 
@@ -55,6 +55,7 @@ export async function fetchYahooSeries(
     if (typeof metaPrice === "number" && Number.isFinite(metaPrice)) {
       return { closes: [metaPrice], latest: metaPrice };
     }
+    console.error("[Yahoo] no data for", symbol, "interval:", interval, "range:", range);
     throw new Error("yahoo_no_data");
   }
 
