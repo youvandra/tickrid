@@ -19,20 +19,21 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return out;
 }
 
-async function fetchText(url: string): Promise<string> {
-  const res = await fetch(url, {
-    headers: {
-      "user-agent": "Mozilla/5.0 (compatible; tickr-seed/1.0)",
-      accept: "text/html,*/*",
-    },
-  });
+async function fetchText(url: string, referer?: string): Promise<string> {
+  const headers: Record<string, string> = {
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "accept-language": "en-US,en;q=0.9",
+  };
+  if (referer) headers.referer = referer;
+  const res = await fetch(url, { headers });
   if (!res.ok) throw new Error(`fetch_failed ${res.status} ${url}`);
   return await res.text();
 }
 
 async function getTop100GlobalStocksFromStockAnalysis(): Promise<SeedItem[]> {
   // Source: https://stockanalysis.com/list/biggest-companies/
-  const html = await fetchText("https://stockanalysis.com/list/biggest-companies/");
+  const html = await fetchText("https://stockanalysis.com/list/biggest-companies/", "https://stockanalysis.com/");
   const re =
     /<td class="sym[^>]*>\s*<!----><a href="\/stocks\/[^/]+\/">([A-Z0-9.\-]+)<\/a>.*?<\/td>\s*<!--\]-->.*?<td class="slw[^>]*">([^<]+)<\/td>/gms;
   const items: SeedItem[] = [];
@@ -101,9 +102,13 @@ async function main(): Promise<void> {
 
   const items: SeedItem[] = [];
   if (includeGlobal) {
-    const global = await getTop100GlobalStocksFromStockAnalysis();
-    items.push(...global);
-    console.log(`[seed] global stocks: ${global.length}`);
+    try {
+      const global = await getTop100GlobalStocksFromStockAnalysis();
+      items.push(...global);
+      console.log(`[seed] global stocks: ${global.length}`);
+    } catch (e) {
+      console.warn("[seed] global stocks fetch failed, skipping:", e);
+    }
   }
   if (includeIndo) {
     const indo = await getAllIndonesiaStocksFromKontan();
