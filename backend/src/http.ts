@@ -132,7 +132,13 @@ export async function createHttpApp(opts: {
     const exchange = req.query.exchange ? String(req.query.exchange) : "";
     const points = Math.max(2, Math.min(128, Number(req.query.points ?? 32)));
     
-    const apiKey = process.env.TWELVE_DATA_API_KEY || "";
+    const apiKeys = [
+      process.env.TWELVE_DATA_API_KEY,
+      process.env.TWELVE_DATA_API_KEY_2,
+      process.env.TWELVE_DATA_API_KEY_3,
+      process.env.TWELVE_DATA_API_KEY_4,
+      process.env.TWELVE_DATA_API_KEY_5,
+    ].filter((k): k is string => !!k);
     const timezone = process.env.TWELVE_TIMEZONE || "Asia/Jakarta";
     if (!symbol) return res.status(400).json({ error: "missing_symbol" });
     if (symbol.length > 64) return res.status(400).json({ error: "symbol_too_long" });
@@ -152,9 +158,9 @@ export async function createHttpApp(opts: {
     }
 
     try {
-      if (!apiKey) throw new Error("missing_twelve_data_api_key");
+      if (apiKeys.length === 0) throw new Error("missing_twelve_data_api_key");
 
-      const { closes, latest } = await fetchTwelveSeries(symbol, apiKey, interval, points, {
+      const { closes, latest } = await fetchTwelveSeries(symbol, apiKeys, interval, points, {
         exchange: exchange || undefined,
         timezone,
       });

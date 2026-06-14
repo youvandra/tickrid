@@ -30,7 +30,14 @@ export async function startMarketService(opts: MarketServiceOptions): Promise<()
   const activePairs = new Set<string>();
   const indoStockSymbols = new Set<string>();
   let lastIndoRefreshTs = 0;
-  const twelveApiKey = process.env.TWELVE_DATA_API_KEY || "";
+  const twelveApiKeys = [
+    process.env.TWELVE_DATA_API_KEY,
+    process.env.TWELVE_DATA_API_KEY_2,
+    process.env.TWELVE_DATA_API_KEY_3,
+    process.env.TWELVE_DATA_API_KEY_4,
+    process.env.TWELVE_DATA_API_KEY_5,
+  ].filter((k): k is string => !!k);
+  const twelveApiKey = twelveApiKeys[0] || "";
   const twelveCacheMs = (Number(process.env.TWELVE_CACHE_SECONDS ?? "60") || 60) * 1000;
   const yahooCacheMs = (Number(process.env.YAHOO_CACHE_SECONDS ?? "30") || 30) * 1000;
   const indoRefreshMs = (Number(process.env.INDO_SYMBOLS_REFRESH_SECONDS ?? "600") || 600) * 1000; // default 10m
@@ -96,7 +103,7 @@ export async function startMarketService(opts: MarketServiceOptions): Promise<()
       if (twelveApiKey) {
         try {
           if (logMarketPolls) console.log(`[MarketService] Polling ${pair}...`);
-          const { closes, latest } = await fetchTwelveSeries(pair, twelveApiKey, "1min", 32);
+          const { closes, latest } = await fetchTwelveSeries(pair, twelveApiKeys, "1min", 32);
           if (closes.length >= 2) {
             price = latest;
             intervalSec = 60;
