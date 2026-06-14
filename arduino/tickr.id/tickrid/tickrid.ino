@@ -32,11 +32,28 @@ void loop() {
 static const char *WIFI_SSID = "Reffiw";
 static const char *WIFI_PASSWORD = "123321123";
 
+// Override via build flags: -DFIRMWARE_WEB_BASE=\"https://tickr.id\" -DFIRMWARE_WS_HOST=\"tickr.id\"
+#ifdef FIRMWARE_WEB_BASE
+static const char *WEB_BASE_URL = FIRMWARE_WEB_BASE;
+#else
 static const char *WEB_BASE_URL = "http://172.20.10.7:3000";
+#endif
+#ifdef FIRMWARE_WS_HOST
+static const char *WS_HOST = FIRMWARE_WS_HOST;
+#else
 static const char *WS_HOST = "172.20.10.7";
+#endif
+#ifdef FIRMWARE_WS_PORT
+static const uint16_t WS_PORT = FIRMWARE_WS_PORT;
+#else
 static const uint16_t WS_PORT = 4000;
-static const char *WS_PATH = "/device";
+#endif
+#ifdef FIRMWARE_WS_SSL
+static const bool WS_SSL = true;
+#else
 static const bool WS_SSL = false;
+#endif
+static const char *WS_PATH = "/device";
 
 struct PriceData {
   float price = NAN;

@@ -31,7 +31,12 @@ static const int PANEL_CHAIN = 1;
 #define OE_PIN 15
 #define CLK_PIN 2
 
+// Override via build flags: -DFIRMWARE_API_BASE=\"https://tickr.id\"
+#ifdef FIRMWARE_API_BASE
+static const char *API_BASE = FIRMWARE_API_BASE;
+#else
 static const char *API_BASE = "http://172.20.10.7:4000";
+#endif
 static const char *PAIR = "BTC/USD";
 static const char *INTERVAL = "1min";
 static const int POINTS = 64;
