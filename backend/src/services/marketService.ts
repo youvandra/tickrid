@@ -38,8 +38,8 @@ export async function startMarketService(opts: MarketServiceOptions): Promise<()
     process.env.TWELVE_DATA_API_KEY_5,
   ].filter((k): k is string => !!k);
   const twelveApiKey = twelveApiKeys[0] || "";
-  const twelveCacheMs = (Number(process.env.TWELVE_CACHE_SECONDS ?? "60") || 60) * 1000;
-  const yahooCacheMs = (Number(process.env.YAHOO_CACHE_SECONDS ?? "30") || 30) * 1000;
+  const twelveCacheMs = (Number(process.env.TWELVE_CACHE_SECONDS ?? "120") || 120) * 1000;
+  const yahooCacheMs = (Number(process.env.YAHOO_CACHE_SECONDS ?? "60") || 60) * 1000;
   const indoRefreshMs = (Number(process.env.INDO_SYMBOLS_REFRESH_SECONDS ?? "600") || 600) * 1000; // default 10m
   const logMarketPolls = process.env.LOG_MARKET_POLLS === "1";
 

@@ -59,10 +59,10 @@ static uint32_t rotateSeconds = 60;
 static uint8_t globalBrightness = 30;
 static unsigned long lastRotateMs = 0;
 static unsigned long lastConfigFetchMs = 0;
-static const unsigned long configFetchEveryMs = 30 * 1000;
+static const unsigned long configFetchEveryMs = 60 * 1000;
 static String displayMode = "auto"; // auto | one | two | multi_one | multi_two
 static unsigned long lastFetch = 0;
-static const unsigned long fetchEveryMs = 15 * 1000;
+static const unsigned long fetchEveryMs = 60 * 1000;
 
 static String currentSymbol = PAIR;
 static String currentInterval = INTERVAL;

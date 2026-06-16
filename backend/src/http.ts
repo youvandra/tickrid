@@ -88,7 +88,7 @@ export async function createHttpApp(opts: {
 }): Promise<{ app: express.Express; close: () => Promise<void> }> {
   const redis = createRedis(opts.redisUrl);
   await redis.connect();
-  const twelveCacheSec = Number(process.env.TWELVE_CACHE_SECONDS ?? "60") || 60;
+  const twelveCacheSec = Number(process.env.TWELVE_CACHE_SECONDS ?? "120") || 120;
   const logSeriesRequests = process.env.LOG_SERIES_REQUESTS === "1";
 
   const app = express();
